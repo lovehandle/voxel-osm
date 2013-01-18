@@ -1,0 +1,22 @@
+{
+  "name":    "voxel-osm",
+  "main":    "index.js",
+  "version": "0.0.0",
+
+  "repository": {
+    "type":"git",
+    "url": "git@github.com:rclosner/voxel-osm.git"
+  },
+
+  "dependencies": {
+    "voxel":        "0.1.0",
+    "voxel-engine": "0.2.8"
+  },
+
+  "scripts": {
+    "start": "node server.js",
+    "make": "mkdir -p dist && browserify index.js > dist/browserify-bundle.js",
+    "watch": "mkdir -p dist && browserify index.js -o dist/browserify-bundle.js --watch --debug"
+  }
+
+}
