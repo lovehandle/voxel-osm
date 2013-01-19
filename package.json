@@ -9,14 +9,19 @@
   },
 
   "dependencies": {
-    "voxel":        "0.1.0",
-    "voxel-engine": "0.2.8"
+    "voxel":           "0.1.0",
+    "voxel-engine":    "0.2.8",
+    "browser-request": "0.2.0"
+  },
+
+  "devDependencies": {
+    "ecstatic": "0.3.0"
   },
 
   "scripts": {
     "start": "node server.js",
-    "make": "mkdir -p dist && browserify index.js > dist/browserify-bundle.js",
-    "watch": "mkdir -p dist && browserify index.js -o dist/browserify-bundle.js --watch --debug"
+    "make":  "mkdir -p dist && browserify demo/demo.js > dist/browserify-bundle.js",
+    "watch": "mkdir -p dist && browserify demo/demo.js -o dist/browserify-bundle.js --watch --debug"
   }
 
 }
