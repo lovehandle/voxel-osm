@@ -10,7 +10,7 @@
 
   "dependencies": {
     "voxel":           "0.1.0",
-    "voxel-engine":    "0.2.8",
+    "voxel-engine":    "0.2.9",
     "browser-request": "0.2.0"
   },
 
