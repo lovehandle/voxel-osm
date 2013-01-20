@@ -1,38 +1,37 @@
-var OSM             = require("../lib/osm.js");
+var OSM             = require("../lib/open_street_maps.js");
 var CurrentLocation = require("../lib/current_location.js");
 var CartoDB         = require("../lib/cartodb.js");
 
-var curLoc = new CurrentLocation({
+// Retrieve current location
+var position = new CurrentLocation({
   success: init,
-  error:   error
+  error: onGetLocationError
 });
 
-
-function init () {
-  var lat   = curLoc.latitude;
-  var lng   = curLoc.longitude;
-
-  var sql   = new CartoDB(); 
-  var query = nearby(lat, lng); 
-
-  sql.execute(query, function ( error, response, body ) {
-    if (error) throw(error);
-
-    var osm = new OSM({
-      nodes:  body.rows,
-      startingLat: lat,
-      startingLng: lng
-    });
-
-    osm.create.apply(osm)
-  });
-};
-
-
-function error () {
-  throw("fuck");
+// Handle errors from location retrieval
+function onGetLocationError () {
+  console.log("damn");
 }
 
-function nearby (lat, lng) {
-  return "SELECT X(the_geom), Y(the_geom) FROM map_point WHERE ST_Distance(the_geom, ST_GeomFromText('POINT("+ lng + " " + lat + ")', 4326)) < 10000";
+// Retrieve nodes from CartoDB
+function init () {
+  var sql = new CartoDB();
+  sql.nearby( position.latitude, position.longitude, 10000, handleCartoDBResponse )
+};
+
+// Handle errors from CartoDB
+function handleCartoDBResponse( error, response, body ) {
+  if (error) throw(error);
+  create(body.rows);
+}
+
+// Create world from nodes
+function create ( nodes ) {
+  var osm    = new OSM({
+    startingLat: position.latitude,
+    startingLng: position.longitude,
+    nearbyNodes: nodes
+  });
+
+  window.osm = osm
 }
