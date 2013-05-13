@@ -168,7 +168,7 @@ module.exports = function(opts, setup) {
 
 function displayMetaData (data) {
   $element = document.querySelector("#metadata");
-  $element.style["padding"] = "20px";
+  $element.style["padding"] = "10px 5px";
   $element.style["height"] = "auto";
   $element.style["opacity"] = 0.5;
   $element.innerHTML = "<h1>"+data+"</h1>";
@@ -181,19 +181,23 @@ function hideMetaData () {
   $element.style["opacity"] = 0;
 }
 
+function relativePosition (position) {
+  var origin = game.startingPosition,
+      x = Math.round(origin[0] + position[0]),
+      y = Math.round(origin[1] + position[1]),
+      z = Math.round(origin[2] + position[2])
+
+  return [x,y,z]
+}
+
 function defaultSetup(game, avatar) {
   // highlight blocks when you look at them, hold <Ctrl> for block placement
   var blockPosPlace, blockPosErase
   var hl = game.highlighter = highlight(game, { color: 0xff0000 })
   hl.on('highlight', function (voxelPos) { 
     blockPosErase = voxelPos; 
-
-    var index = [game.startingPosition[0] + voxelPos[0], game.startingPosition[1] + voxelPos[1], game.startingPosition[2] + voxelPos[2]] .join("|")
-    var data = world[index]
-
-    if (data) {
-      displayMetaData(data["name"])
-    }
+    data = world[ relativePosition(voxelPos).join("|") ]
+    if (data) displayMetaData(data.name)
   });
   hl.on('remove', function (voxelPos) { 
     blockPosErase = null 
