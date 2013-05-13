@@ -20,6 +20,11 @@ origin = {
   lng: -122.3960285
 }
 
+var padding = {
+  residential: 2,
+  secondary: 6
+}
+
 var world = {}
 window.world = world
 
@@ -43,7 +48,24 @@ module.exports = function(opts, setup) {
 
     // Set index for each intermediary node
     for (var x = xmin; x <= xmax; x++) {
-      setIndex( [x, 0, Math.round(m*x+b) ] )
+      var yPadding = 0
+      var zPadding = 0 
+      var z = Math.round(m*x+b)
+      var y = 0
+
+      if (properties.highway) {
+        zPadding = padding[properties.highway]
+      }
+
+      if (properties.building) {
+        yPadding = 5 
+      }
+
+      for (var zn = (z - zPadding); zn <= (z + zPadding); zn++) {
+        for (var yn =  (y - yPadding); yn <= (y + yPadding); yn++){
+          setIndex( [x, yn, zn] )
+        }
+      }
     }
   }
 
