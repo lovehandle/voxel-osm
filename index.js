@@ -29,43 +29,60 @@ module.exports = function(opts, setup) {
   position = [24171244, 0, 5073305]
 
   function connectNodes (nodeA, nodeB) {
+    // Convert nodes from degrees to meters
     var posA = convert.degreesToPosition(nodeA[1], nodeA[0])
     var posB = convert.degreesToPosition(nodeB[1], nodeB[0])
 
+    // Calculate intermediary nodes using y = mx + b
     var m = (posA[2] - posB[2]) / (posA[0] - posB[0])
     var b = (posA[2] - (posA[0] * m))
 
+    // Set xmin and xmax
     var xmin, xmax
-
     (posA[0] < posB[0]) ? (xmin = posA[0], xmax = posB[0]) : (xmin = posB[0], xmax = posA[0])
 
+    // Set index for each intermediary node
     for (var x = xmin; x <= xmax; x++) {
-      world[ [x, 0, Math.round(m*x+b) ].join("|") ] = properties
+      setIndex( [x, 0, Math.round(m*x+b) ] )
     }
   }
 
-  function processLineString (coordinates) {
-    var func = function (i, j)  {
-      var nodeA = coordinates[i],
-          nodeB = coordinates[j]
-      connectNodes(nodeA, nodeB)
-    }
+  function setIndex (position) {
+    world[ position.join("|") ] = properties
+  }
 
-    if (coordinates[0] < coordinates[coordinates.length]) {
-      for (var i = 0; i < coordinates.length; i++) { var j = i + 1; func(i,j) }
-    } else {
-      for (var i = coordinates.length - 1; i > 0; i--) { var j = i - 1; func(i,j) }
+  function processNode (node) {
+    setIndex( convert.degreesToPosition(node[1], node[0]) )
+  }
+
+  function processNodes (nodes) {
+    if (!(nodes[0] < nodes[nodes.length])) nodes = nodes.reverse()
+    for (var i = 0; i < nodes.length - 1; i++) {
+      connectNodes(nodes[i], nodes[i+1])
     }
   }
 
-  var features = geojson.features
-  for (var i = 0; i < features.length; i++) {
-    var feature    = features[i]
+  function processNodeSets (nodeSets) {
+    for (var i = 0; i < nodeSets.length; i++) {
+      processNodes( nodeSets[i] ) 
+    }
+  }
+
+  for (var i = 0; i < geojson.features.length; i++) {
+    var feature    = geojson.features[i]
     var properties = feature.properties
     var geometry   = feature.geometry
 
-    if (geometry.type == "LineString" || geometry.type == "Polygon") {
-      processLineString(geometry.coordinates) 
+    switch (geometry.type) {
+      case "Point" :
+        processNode(geometry.coordinates)
+        break
+      case "LineString" :
+        processNodes(geometry.coordinates)
+        break
+      case "Polygon" :
+        processNodeSets(geometry.coordinates)
+        break
     }
   }
 
@@ -74,18 +91,23 @@ module.exports = function(opts, setup) {
   var defaults = {
     generate: function (x, y, z) {
       x = x + position[0], y = y + position[1], z = z + position[2]
-      // Don't worry about elevation for now.
-      if (y != 0) return 0;
       // Calculate index to look up metadata
       var index = [x,y,z].join("|")
+          data  = world[index]
       // If data exists return data; else return grass
-      if (window.world[index]) {
-        return 2; 
+      if (data) {
+        if (data.building == "yes") {
+          return 3 
+        } else {
+          return 2 
+        }
       } else {
+        if (y != 0) return 0
         return 1
       } 
 
     },
+    chunkSize: 10,
     chunkDistance: 2,
     materials: [
       ['grass', 'dirt', 'grass_dirt'],
