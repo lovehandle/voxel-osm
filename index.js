@@ -6,7 +6,7 @@ var texturePath = require('painterly-textures')(__dirname)
 var voxel = require('voxel')
 var convert = require('./lib/voxel-degrees')
 var extend = require('extend')
-var geojson = require("./map")
+var geojson = require("./data/map")
 
 window.geojson = geojson
 
