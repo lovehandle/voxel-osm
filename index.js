@@ -1,6 +1,7 @@
 var createGame = require('voxel-engine')
 var highlight = require('voxel-highlight')
 var player = require('voxel-player')
+var walk   = require('voxel-walk')
 var texturePath = require('painterly-textures')(__dirname)
 var voxel = require('voxel')
 var convert = require('./lib/voxel-degrees')
@@ -31,7 +32,7 @@ window.world = world
 module.exports = function(opts, setup) {
 
   var position = convert.degreesToPosition(origin.lat, origin.lng)
-  position = [24171244, 0, 5073305]
+  position = [24171358, 0, -2855713]
 
   function connectNodes (nodeA, nodeB) {
     // Convert nodes from degrees to meters
@@ -121,7 +122,7 @@ module.exports = function(opts, setup) {
         if (data.building == "yes") {
           return 3 
         } else {
-          return 2 
+          return 2
         }
       } else {
         if (y != 0) return 0
@@ -159,6 +160,7 @@ module.exports = function(opts, setup) {
   var avatar = createPlayer(opts.playerSkin || 'player.png')
   avatar.possess()
   avatar.yaw.position.set(2, 14, 4)
+  avatar.pov('third')
 
   setup(game, avatar)
   
@@ -191,6 +193,7 @@ function relativePosition (position) {
 }
 
 function defaultSetup(game, avatar) {
+  var target = game.controls.target()
   // highlight blocks when you look at them, hold <Ctrl> for block placement
   var blockPosPlace, blockPosErase
   var hl = game.highlighter = highlight(game, { color: 0xff0000 })
@@ -223,6 +226,14 @@ function defaultSetup(game, avatar) {
       position = blockPosErase
       if (position) game.setBlock(position, 0)
     }
+  })
+
+  game.on('tick', function() {
+    walk.render(target.playerSkin)
+    var vx = Math.abs(target.velocity.x)
+    var vz = Math.abs(target.velocity.z)
+    if (vx > 0.001 || vz > 0.001) walk.stopWalking()
+    else walk.startWalking()
   })
 
 }
